@@ -1,4 +1,4 @@
-module llog
+module github.com/zhaorx/llog
 
 go 1.19
 
