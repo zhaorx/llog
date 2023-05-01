@@ -3,7 +3,7 @@ package zlog
 import "testing"
 
 func TestNewLogger(t *testing.T) {
-	Init(Conf{"../../logs/fly.log", ConsoleEncoder})
+	Init(Conf{"./logs/fly.log", ConsoleEncoder})
 	defer Sync()
 	Debug("debug msg")
 	Debugf("debugf %s", "fly")
@@ -17,7 +17,7 @@ func TestNewLogger(t *testing.T) {
 }
 
 func TestFatalf(t *testing.T) {
-	Init(Conf{"../../logs/fly.log", JsonEncoder})
+	Init(Conf{"./logs/fly.log", JsonEncoder})
 	defer Sync()
 	Fatalf("fatalf %v", map[string]interface{}{"name": "master"})
 }
