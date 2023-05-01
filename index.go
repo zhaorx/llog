@@ -1,4 +1,4 @@
-package llog
+package zlog
 
 import (
 	"os"
@@ -99,9 +99,9 @@ func NewLogger(items []logItem) {
 			LocalTime:  true,       // 备份文件名本地/UTC时间
 		}
 		core := zapcore.NewCore(
-			cfg,                                                                             // 编码器配置;
+			cfg, // 编码器配置;
 			zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), zapcore.AddSync(&hook)), // 打印到控制台和文件
-			v.Level,                                                                         // 日志级别
+			v.Level, // 日志级别
 		)
 		cores = append(cores, core)
 	}

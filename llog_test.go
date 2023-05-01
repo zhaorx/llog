@@ -1,4 +1,4 @@
-package llog
+package zlog
 
 import "testing"
 
