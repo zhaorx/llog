@@ -13,6 +13,7 @@ import (
 
 type (
 	Conf struct {
+		Mode    string // dev/test/prod dev不写文件 prod不写控制台
 		Path    string // 日志路径
 		Encoder string // 编码器选择
 	}
@@ -45,8 +46,11 @@ var (
 	_pool      = buffer.NewPool()
 	c          Conf
 
-	ConsoleEncoder = "console" // 控制台输出
-	JsonEncoder    = "json"    // json输出
+	ConsoleEncoder  = "console" // 控制台输出
+	JsonEncoder     = "json"    // json输出
+	developmentMode = "dev"     // dev mode
+	testMode        = "test"    // test mode
+	productionMode  = "prod"    // prod mode
 )
 
 // Init 初始化日志.
@@ -71,11 +75,11 @@ func Init(conf Conf) {
 		},
 	}
 
-	NewLogger(items)
+	NewLogger(items, c.Mode)
 }
 
 // NewLogger 日志.
-func NewLogger(items []logItem) {
+func NewLogger(items []logItem, mode string) {
 	var (
 		cfg   zapcore.Encoder
 		cores []zapcore.Core
@@ -98,18 +102,38 @@ func NewLogger(items []logItem) {
 			Compress:   true,       // 是否压缩
 			LocalTime:  true,       // 备份文件名本地/UTC时间
 		}
+		writters := make([]zapcore.WriteSyncer, 0)
+		switch mode {
+		case testMode:
+			writters = append(writters, zapcore.AddSync(os.Stdout), zapcore.AddSync(&hook))
+		case productionMode:
+			writters = append(writters, zapcore.AddSync(&hook))
+		default: // dev mode
+			writters = append(writters, zapcore.AddSync(os.Stdout))
+		}
+
 		core := zapcore.NewCore(
-			cfg, // 编码器配置;
-			zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), zapcore.AddSync(&hook)), // 打印到控制台和文件
-			v.Level, // 日志级别
+			cfg,                                      // 编码器配置;
+			zapcore.NewMultiWriteSyncer(writters...), // 打印到控制台和文件
+			v.Level,                                  // 日志级别
 		)
 		cores = append(cores, core)
 	}
 
-	// 开启开发模式，堆栈跟踪
-	caller := zap.AddCaller()
-	// 开发模式
-	development := zap.Development()
+	var caller zap.Option
+	var development zap.Option
+	switch mode {
+	case testMode:
+		// 开启开发模式，堆栈跟踪
+		caller = zap.AddCaller()
+		// zap的开发模式
+		development = zap.Development()
+	default: // dev mode
+		// 开启开发模式，堆栈跟踪
+		caller = zap.AddCaller()
+		// zap的开发模式
+		development = zap.Development()
+	}
 	// 二次封装
 	skip := zap.AddCallerSkip(1)
 	// 构造日志

@@ -8,4 +8,7 @@ out
 gen
 *.exe
 *.log
+logs/*
+log/*
 linux/*
+
