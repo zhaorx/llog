@@ -13,9 +13,9 @@ import (
 
 type (
 	Conf struct {
-		Mode    string // dev/test/prod dev不写文件 prod不写控制台
-		Path    string // 日志路径
-		Encoder string // 编码器选择
+		Mode    string `yaml:"mode"`    // dev/test/prod dev不写文件 prod不写控制台
+		Path    string `yaml:"path"`    // 日志路径
+		Encoder string `yaml:"encoder"` // 编码器选择
 	}
 	logItem struct {
 		FileName string
