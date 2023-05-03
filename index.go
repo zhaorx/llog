@@ -95,11 +95,9 @@ func NewLogger(items []logItem) {
 			cfg = NewJsonLog().Config()
 		case prodProfile:
 			cfg = NewJsonLog().Config()
-		default: // dev mode
+		default: // dev mode or no value
 			cfg = NewConsoleLog().Config()
 		}
-
-		cfg = NewConsoleLog().Config()
 	}
 
 	for _, v := range items {
