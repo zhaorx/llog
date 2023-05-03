@@ -13,7 +13,7 @@ import (
 
 type (
 	Conf struct {
-		Mode    string `yaml:"mode"`    // dev/test/prod dev不写文件 prod不写控制台
+		Profile string `yaml:"profile"` // dev/test/prod dev不写文件 prod不写控制台
 		Path    string `yaml:"path"`    // 日志路径
 		Encoder string `yaml:"encoder"` // 编码器选择
 	}
@@ -46,11 +46,11 @@ var (
 	_pool      = buffer.NewPool()
 	c          Conf
 
-	ConsoleEncoder  = "console" // 控制台输出
-	JsonEncoder     = "json"    // json输出
-	developmentMode = "dev"     // dev mode
-	testMode        = "test"    // test mode
-	productionMode  = "prod"    // prod mode
+	ConsoleEncoder = "console" // 控制台输出
+	JsonEncoder    = "json"    // json输出
+	devProfile     = "dev"     // dev mode
+	testProfile    = "test"    // test mode
+	prodProfile    = "prod"    // prod mode
 )
 
 // Init 初始化日志.
@@ -90,10 +90,10 @@ func NewLogger(items []logItem) {
 	case ConsoleEncoder:
 		cfg = NewConsoleLog().Config()
 	default:
-		switch c.Mode {
-		case testMode:
+		switch c.Profile {
+		case testProfile:
 			cfg = NewJsonLog().Config()
-		case productionMode:
+		case prodProfile:
 			cfg = NewJsonLog().Config()
 		default: // dev mode
 			cfg = NewConsoleLog().Config()
@@ -112,10 +112,10 @@ func NewLogger(items []logItem) {
 			LocalTime:  true,       // 备份文件名本地/UTC时间
 		}
 		writters := make([]zapcore.WriteSyncer, 0)
-		switch c.Mode {
-		case testMode:
+		switch c.Profile {
+		case testProfile:
 			writters = append(writters, zapcore.AddSync(os.Stdout), zapcore.AddSync(&hook))
-		case productionMode:
+		case prodProfile:
 			writters = append(writters, zapcore.AddSync(&hook))
 		default: // dev mode
 			writters = append(writters, zapcore.AddSync(os.Stdout))
@@ -131,8 +131,8 @@ func NewLogger(items []logItem) {
 
 	var caller zap.Option
 	var development zap.Option
-	switch c.Mode {
-	case testMode:
+	switch c.Profile {
+	case testProfile:
 		// 开启开发模式，堆栈跟踪
 		caller = zap.AddCaller()
 		// zap的开发模式
