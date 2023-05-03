@@ -75,11 +75,11 @@ func Init(conf Conf) {
 		},
 	}
 
-	NewLogger(items, c.Mode)
+	NewLogger(items)
 }
 
 // NewLogger 日志.
-func NewLogger(items []logItem, mode string) {
+func NewLogger(items []logItem) {
 	var (
 		cfg   zapcore.Encoder
 		cores []zapcore.Core
@@ -90,6 +90,15 @@ func NewLogger(items []logItem, mode string) {
 	case ConsoleEncoder:
 		cfg = NewConsoleLog().Config()
 	default:
+		switch c.Mode {
+		case testMode:
+			cfg = NewJsonLog().Config()
+		case productionMode:
+			cfg = NewJsonLog().Config()
+		default: // dev mode
+			cfg = NewConsoleLog().Config()
+		}
+
 		cfg = NewConsoleLog().Config()
 	}
 
@@ -103,7 +112,7 @@ func NewLogger(items []logItem, mode string) {
 			LocalTime:  true,       // 备份文件名本地/UTC时间
 		}
 		writters := make([]zapcore.WriteSyncer, 0)
-		switch mode {
+		switch c.Mode {
 		case testMode:
 			writters = append(writters, zapcore.AddSync(os.Stdout), zapcore.AddSync(&hook))
 		case productionMode:
@@ -122,7 +131,7 @@ func NewLogger(items []logItem, mode string) {
 
 	var caller zap.Option
 	var development zap.Option
-	switch mode {
+	switch c.Mode {
 	case testMode:
 		// 开启开发模式，堆栈跟踪
 		caller = zap.AddCaller()
